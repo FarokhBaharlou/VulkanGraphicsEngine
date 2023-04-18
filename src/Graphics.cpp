@@ -35,6 +35,7 @@ namespace FVulkanEngine
 	{
 		createInstance();
 		setupDebugMessenger();
+		device.create(instance);
 	}
 	Graphics::~Graphics()
 	{

@@ -1,5 +1,6 @@
 #pragma once
 #define GLFW_INCLUDE_VULKAN
+#include "Device.h"
 #include <GLFW/glfw3.h>
 #include <vector>
 
@@ -29,5 +30,6 @@ namespace FVulkanEngine
 		VkInstance instance;
 		VkDebugUtilsMessengerEXT debugMessenger;
 		const std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
+		Device device;
 	};
 }
