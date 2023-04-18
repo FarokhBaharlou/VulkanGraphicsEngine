@@ -1,5 +1,6 @@
 #pragma once
 #include "Window.h"
+#include "Graphics.h"
 
 namespace FVulkanEngine
 {
@@ -14,5 +15,6 @@ namespace FVulkanEngine
 		void run();
 	private:
 		Window window{800, 600, "FVulkanEngine"};
+		Graphics gfx{};
 	};
 }
