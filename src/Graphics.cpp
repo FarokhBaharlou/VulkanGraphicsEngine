@@ -35,10 +35,12 @@ namespace FVulkanEngine
 	{
 		createInstance();
 		setupDebugMessenger();
-		device.create(instance);
+		device.createPhysicalDevice(instance);
+		device.createLogicalDevice(enableValidationLayers, validationLayers);
 	}
 	Graphics::~Graphics()
 	{
+		device.destroy();
 		if (enableValidationLayers)
 		{
 			DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);

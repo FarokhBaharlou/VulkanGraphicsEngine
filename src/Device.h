@@ -1,5 +1,6 @@
 #pragma once
 #include <vulkan/vulkan.h>
+#include <vector>
 #include <optional>
 
 namespace FVulkanEngine
@@ -17,7 +18,9 @@ namespace FVulkanEngine
 		~Device();
 		Device(const Device&) = delete;
 		Device& operator=(const Device&) = delete;
-		void create(const VkInstance& instance);
+		void createPhysicalDevice(const VkInstance& instance);
+		void createLogicalDevice(bool enableValidationLayers, const std::vector<const char*>& validationLayers);
+		void destroy();
 	private:
 		void pickPhysicalDevice(const VkInstance& instance);
 		bool isDeviceSuitable(VkPhysicalDevice device);
@@ -25,5 +28,7 @@ namespace FVulkanEngine
 	private:
 		VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 		VkPhysicalDeviceProperties properties;
+		VkDevice device;
+		VkQueue graphicsQueue;
 	};
 }
