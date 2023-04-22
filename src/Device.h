@@ -14,13 +14,12 @@ namespace FVulkanEngine
 			bool isComplete() { return graphicsFamily.has_value(); }
 		};
 	public:
-		Device();
+		Device(const VkInstance& instance, bool enableValidationLayers, const std::vector<const char*>& validationLayers);
 		~Device();
 		Device(const Device&) = delete;
 		Device& operator=(const Device&) = delete;
 		void createPhysicalDevice(const VkInstance& instance);
 		void createLogicalDevice(bool enableValidationLayers, const std::vector<const char*>& validationLayers);
-		void destroy();
 	private:
 		void pickPhysicalDevice(const VkInstance& instance);
 		bool isDeviceSuitable(VkPhysicalDevice device);

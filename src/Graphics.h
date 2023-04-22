@@ -3,6 +3,7 @@
 #include "Device.h"
 #include <GLFW/glfw3.h>
 #include <vector>
+#include <memory>
 
 namespace FVulkanEngine
 {
@@ -30,6 +31,6 @@ namespace FVulkanEngine
 		VkInstance instance;
 		VkDebugUtilsMessengerEXT debugMessenger;
 		const std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
-		Device device;
+		std::unique_ptr<Device> device;
 	};
 }

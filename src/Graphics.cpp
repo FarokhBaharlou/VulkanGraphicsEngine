@@ -35,12 +35,11 @@ namespace FVulkanEngine
 	{
 		createInstance();
 		setupDebugMessenger();
-		device.createPhysicalDevice(instance);
-		device.createLogicalDevice(enableValidationLayers, validationLayers);
+		device = std::make_unique<Device>(instance, enableValidationLayers, validationLayers);
 	}
 	Graphics::~Graphics()
 	{
-		device.destroy();
+		device.reset();
 		if (enableValidationLayers)
 		{
 			DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);

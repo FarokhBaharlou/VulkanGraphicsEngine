@@ -4,8 +4,15 @@
 
 namespace FVulkanEngine
 {
-	Device::Device() {}
-	Device::~Device() {}
+	Device::Device(const VkInstance& instance, bool enableValidationLayers, const std::vector<const char*>& validationLayers)
+	{
+		createPhysicalDevice(instance);
+		createLogicalDevice(enableValidationLayers, validationLayers);
+	}
+	Device::~Device()
+	{
+		vkDestroyDevice(device, nullptr);
+	}
 	void Device::createPhysicalDevice(const VkInstance& instance)
 	{
 		pickPhysicalDevice(instance);
@@ -95,9 +102,5 @@ namespace FVulkanEngine
 		}
 
 		return indices;
-	}
-	void Device::destroy()
-	{
-		vkDestroyDevice(device, nullptr);
 	}
 }
