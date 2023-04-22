@@ -33,10 +33,11 @@ namespace FVulkanEngine
 	}
 	Graphics::Graphics()
 	{
-		createInstance();
-		setupDebugMessenger();
 		window = std::make_unique<Window>(800, 600, "FVulkanEngine");
-		device = std::make_unique<Device>(instance, enableValidationLayers, validationLayers);
+		createInstance();
+		window->createSurface(instance);
+		setupDebugMessenger();
+		device = std::make_unique<Device>(instance, enableValidationLayers, validationLayers, window->getSurface());
 	}
 	Graphics::~Graphics()
 	{
@@ -45,6 +46,7 @@ namespace FVulkanEngine
 		{
 			DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
 		}
+		window->destructSurface(instance);
 		vkDestroyInstance(instance, nullptr);
 	}
 	std::vector<const char*> Graphics::getRequiredExtensions()

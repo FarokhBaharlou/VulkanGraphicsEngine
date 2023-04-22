@@ -15,10 +15,14 @@ namespace FVulkanEngine
 		Window& operator=(const Window&) = delete;
 	public:
 		bool shouldClose();
+		void createSurface(const VkInstance& instance);
+		void destructSurface(const VkInstance& instance);
+		const VkSurfaceKHR& getSurface();
 	private:
 		uint32_t width = 800;
 		uint32_t height = 600;
 		std::string name;
 		GLFWwindow* window;
+		VkSurfaceKHR surface;
 	};
 }

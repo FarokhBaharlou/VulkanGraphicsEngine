@@ -2,6 +2,7 @@
 #include <vulkan/vulkan.h>
 #include <vector>
 #include <optional>
+#include <memory>
 
 namespace FVulkanEngine
 {
@@ -10,11 +11,13 @@ namespace FVulkanEngine
 	private:
 		struct QueueFamilyIndices
 		{
-			std::optional<int32_t> graphicsFamily;
-			bool isComplete() { return graphicsFamily.has_value(); }
+			std::optional<uint32_t> graphicsFamily;
+			std::optional<uint32_t> presentFamily;
+
+			bool isComplete() { return graphicsFamily.has_value() && presentFamily.has_value(); }
 		};
 	public:
-		Device(const VkInstance& instance, bool enableValidationLayers, const std::vector<const char*>& validationLayers);
+		Device(const VkInstance& instance, bool enableValidationLayers, const std::vector<const char*>& validationLayers, const VkSurfaceKHR& surface);
 		~Device();
 		Device(const Device&) = delete;
 		Device& operator=(const Device&) = delete;
@@ -29,5 +32,7 @@ namespace FVulkanEngine
 		VkPhysicalDeviceProperties properties;
 		VkDevice device;
 		VkQueue graphicsQueue;
+		VkQueue presentQueue;
+		const VkSurfaceKHR& pSurface;
 	};
 }
