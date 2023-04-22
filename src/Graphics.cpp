@@ -35,6 +35,7 @@ namespace FVulkanEngine
 	{
 		createInstance();
 		setupDebugMessenger();
+		window = std::make_unique<Window>(800, 600, "FVulkanEngine");
 		device = std::make_unique<Device>(instance, enableValidationLayers, validationLayers);
 	}
 	Graphics::~Graphics()
@@ -170,5 +171,9 @@ namespace FVulkanEngine
 		{
 			throw std::runtime_error("failed to set up debug messenger.");
 		}
+	}
+	const std::unique_ptr<Window>& Graphics::getWindow()
+	{
+		return window;
 	}
 }

@@ -15,6 +15,5 @@ namespace FVulkanEngine
 		void run();
 	private:
 		Graphics gfx{};
-		Window window{800, 600, "FVulkanEngine"};
 	};
 }

@@ -6,7 +6,7 @@ namespace FVulkanEngine
 	App::~App() {}
 	void App::run()
 	{
-		while (!window.shouldClose())
+		while (!gfx.getWindow()->shouldClose())
 		{
 			glfwPollEvents();
 		}

@@ -1,7 +1,8 @@
 #pragma once
 #define GLFW_INCLUDE_VULKAN
-#include "Device.h"
 #include <GLFW/glfw3.h>
+#include "Device.h"
+#include "Window.h"
 #include <vector>
 #include <memory>
 
@@ -14,6 +15,8 @@ namespace FVulkanEngine
 		~Graphics();
 		Graphics(const Graphics&) = delete;
 		Graphics& operator=(const Graphics&) = delete;
+	public:
+		const std::unique_ptr<Window>& getWindow();
 	private:
 		std::vector<const char*> getRequiredExtensions();
 		void hasGlfwRequiredExtensions();
@@ -32,5 +35,6 @@ namespace FVulkanEngine
 		VkDebugUtilsMessengerEXT debugMessenger;
 		const std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
 		std::unique_ptr<Device> device;
+		std::unique_ptr<Window> window;
 	};
 }
