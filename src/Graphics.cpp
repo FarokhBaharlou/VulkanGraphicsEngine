@@ -38,9 +38,11 @@ namespace FVulkanEngine
 		window->createSurface(instance);
 		setupDebugMessenger();
 		device = std::make_unique<Device>(instance, enableValidationLayers, validationLayers, window->getSurface());
+		swapChain = std::make_unique<SwapChain>(*device, *window);
 	}
 	Graphics::~Graphics()
 	{
+		swapChain.reset();
 		device.reset();
 		if (enableValidationLayers)
 		{

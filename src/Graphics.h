@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include "Device.h"
 #include "Window.h"
+#include "SwapChain.h"
 #include <vector>
 #include <memory>
 
@@ -36,5 +37,6 @@ namespace FVulkanEngine
 		const std::vector<const char*> validationLayers = { "VK_LAYER_KHRONOS_validation" };
 		std::unique_ptr<Device> device;
 		std::unique_ptr<Window> window;
+		std::unique_ptr<SwapChain> swapChain;
 	};
 }

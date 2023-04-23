@@ -36,4 +36,12 @@ namespace FVulkanEngine
 	{
 		return surface;
 	}
+	GLFWwindow* Window::getGLFWwindowPointer() const
+	{
+		return window;
+	}
+	const VkSurfaceKHR& Window::getWindowSurface() const
+	{
+		return surface;
+	}
 }

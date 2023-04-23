@@ -40,7 +40,8 @@ namespace FVulkanEngine
 		createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 		createInfo.pQueueCreateInfos = queueCreateInfos.data();
 		createInfo.pEnabledFeatures = &deviceFeatures;
-		createInfo.enabledExtensionCount = 0;
+		createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
+		createInfo.ppEnabledExtensionNames = deviceExtensions.data();
 		if (enableValidationLayers)
 		{
 			createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
@@ -86,9 +87,16 @@ namespace FVulkanEngine
 	bool Device::isDeviceSuitable(VkPhysicalDevice device)
 	{
 		QueueFamilyIndices indices = findQueueFamilies(device);
-		return indices.isComplete();
+		bool extensionsSupported = checkDeviceExtensionSupport(device);
+		bool swapChainAdequate = false;
+		if (extensionsSupported)
+		{
+			deviceSwapChainDetails = querySwapChainSupport(device);
+			swapChainAdequate = !deviceSwapChainDetails.formats.empty() && !deviceSwapChainDetails.presentModes.empty();
+		}
+		return indices.isComplete() && extensionsSupported && swapChainAdequate;
 	}
-	Device::QueueFamilyIndices Device::findQueueFamilies(VkPhysicalDevice device)
+	Device::QueueFamilyIndices Device::findQueueFamilies(VkPhysicalDevice device) const
 	{
 		QueueFamilyIndices indices;
 
@@ -121,5 +129,53 @@ namespace FVulkanEngine
 		}
 
 		return indices;
+	}
+	bool Device::checkDeviceExtensionSupport(VkPhysicalDevice device)
+	{
+		uint32_t extensionCount;
+		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+		std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+		vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+
+		std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+		for (const auto& extension : availableExtensions)
+		{
+			requiredExtensions.erase(extension.extensionName);
+		}
+		return requiredExtensions.empty();
+	}
+	Device::SwapChainSupportDetails Device::querySwapChainSupport(VkPhysicalDevice device) const
+	{
+		SwapChainSupportDetails details;
+		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, pSurface, &details.capabilities);
+		
+		uint32_t formatCount;
+		vkGetPhysicalDeviceSurfaceFormatsKHR(device, pSurface, &formatCount, nullptr);
+		if (formatCount != 0)
+		{
+			details.formats.resize(formatCount);
+			vkGetPhysicalDeviceSurfaceFormatsKHR(device, pSurface, &formatCount, details.formats.data());
+		}
+
+		uint32_t presentModeCount;
+		vkGetPhysicalDeviceSurfacePresentModesKHR(device, pSurface, &presentModeCount, nullptr);
+		if (presentModeCount != 0)
+		{
+			details.presentModes.resize(presentModeCount);
+			vkGetPhysicalDeviceSurfacePresentModesKHR(device, pSurface, &presentModeCount, details.presentModes.data());
+		}
+		return details;
+	}
+	Device::SwapChainSupportDetails Device::getDeviceSwapChainSupportDetails() const
+	{
+		return querySwapChainSupport(physicalDevice);
+	}
+	Device::QueueFamilyIndices Device::findPhysicalQueueFamilies() const
+	{
+		return findQueueFamilies(physicalDevice);
+	}
+	const VkDevice& Device::getDevice() const
+	{
+		return device;
 	}
 }

@@ -18,6 +18,8 @@ namespace FVulkanEngine
 		void createSurface(const VkInstance& instance);
 		void destructSurface(const VkInstance& instance);
 		const VkSurfaceKHR& getSurface();
+		GLFWwindow* getGLFWwindowPointer() const;
+		const VkSurfaceKHR& getWindowSurface() const;
 	private:
 		uint32_t width = 800;
 		uint32_t height = 600;
