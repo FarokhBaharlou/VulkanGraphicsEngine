@@ -15,6 +15,7 @@ namespace FVulkanEngine
 		SwapChain& operator=(const SwapChain&) = default;
 	private:
 		void createSwapChain();
+		void createImageViews();
 		VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
 		VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 		VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
@@ -25,5 +26,6 @@ namespace FVulkanEngine
 		std::vector<VkImage> swapChainImages;
 		VkFormat swapChainImageFormat;
 		VkExtent2D swapChainExtent;
+		std::vector<VkImageView> swapChainImageViews;
 	};
 }
