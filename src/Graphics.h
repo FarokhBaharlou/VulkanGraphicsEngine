@@ -4,6 +4,7 @@
 #include "Device.h"
 #include "Window.h"
 #include "SwapChain.h"
+#include "Pipeline.h"
 #include <vector>
 #include <memory>
 
@@ -38,5 +39,6 @@ namespace FVulkanEngine
 		std::unique_ptr<Device> device;
 		std::unique_ptr<Window> window;
 		std::unique_ptr<SwapChain> swapChain;
+		std::unique_ptr<Pipeline> pipeline;
 	};
 }
