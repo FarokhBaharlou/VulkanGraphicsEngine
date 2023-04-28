@@ -45,5 +45,6 @@ namespace FVulkanEngine
 		SwapChain& pSwapChain;
 		VkRenderPass renderPass;
 		VkPipelineLayout pipelineLayout;
+		VkPipeline graphicsPipeline;
 	};
 }
