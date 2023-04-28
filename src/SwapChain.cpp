@@ -135,4 +135,8 @@ namespace FVulkanEngine
 			}
 		}
 	}
+	const VkFormat& SwapChain::getSwapChainImageFormat() const
+	{
+		return swapChainImageFormat;
+	}
 }

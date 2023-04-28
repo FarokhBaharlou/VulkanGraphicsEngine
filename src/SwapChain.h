@@ -13,6 +13,8 @@ namespace FVulkanEngine
 		~SwapChain();
 		SwapChain(const SwapChain&) = default;
 		SwapChain& operator=(const SwapChain&) = default;
+	public:
+		const VkFormat& getSwapChainImageFormat() const;
 	private:
 		void createSwapChain();
 		void createImageViews();

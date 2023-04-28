@@ -4,13 +4,15 @@
 
 namespace FVulkanEngine
 {
-	Pipeline::Pipeline(Device& device, const PipelineConfigInfo& configInfo, const std::string& vertFilepath, const std::string& fragFilepath) : pDevice{ device }
+	Pipeline::Pipeline(Device& device, SwapChain& swapChain, const PipelineConfigInfo& configInfo, const std::string& vertFilepath, const std::string& fragFilepath) : pDevice{ device }, pSwapChain{ swapChain }
 	{
+		createRenderPass();
 		createPipeline(configInfo, vertFilepath, fragFilepath);
 	}
 	Pipeline::~Pipeline()
 	{
 		vkDestroyPipelineLayout(pDevice.getDevice(), pipelineLayout, nullptr);
+		vkDestroyRenderPass(pDevice.getDevice(), renderPass, nullptr);
 	}
 	void Pipeline::createPipeline(const PipelineConfigInfo& configInfo, const std::string& vertFilepath, const std::string& fragFilepath)
 	{
@@ -113,5 +115,36 @@ namespace FVulkanEngine
 		configInfo.dynamicStateInfo.dynamicStateCount = static_cast<uint32_t>(configInfo.dynamicStateEnables.size());
 		configInfo.dynamicStateInfo.pDynamicStates = configInfo.dynamicStateEnables.data();
 		configInfo.dynamicStateInfo.flags = 0;
+	}
+	void Pipeline::createRenderPass()
+	{
+		VkAttachmentDescription colorAttachment{};
+		colorAttachment.format = pSwapChain.getSwapChainImageFormat();
+		colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+		colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+		colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+		colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+		VkAttachmentReference colorAttachmentRef{};
+		colorAttachmentRef.attachment = 0;
+		colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		VkSubpassDescription subpass{};
+		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+		subpass.colorAttachmentCount = 1;
+		subpass.pColorAttachments = &colorAttachmentRef;
+
+		VkRenderPassCreateInfo renderPassInfo{};
+		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+		renderPassInfo.attachmentCount = 1;
+		renderPassInfo.pAttachments = &colorAttachment;
+		renderPassInfo.subpassCount = 1;
+		renderPassInfo.pSubpasses = &subpass;
+		if (vkCreateRenderPass(pDevice.getDevice(), &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to create render pass");
+		}
 	}
 }

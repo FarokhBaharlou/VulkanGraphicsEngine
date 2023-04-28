@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Device.h"
+#include "SwapChain.h"
 #include <string>
 
 namespace FVulkanEngine
@@ -30,7 +31,7 @@ namespace FVulkanEngine
 			VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 		};
 	public:
-		Pipeline(Device& device, const PipelineConfigInfo& configInfo, const std::string& vertFilepath, const std::string& fragFilepath);
+		Pipeline(Device& device, SwapChain& swapChain,const PipelineConfigInfo& configInfo, const std::string& vertFilepath, const std::string& fragFilepath);
 		~Pipeline();
 		Pipeline(const Pipeline&) = delete;
 		Pipeline& operator=(const Pipeline&) = delete;
@@ -38,8 +39,11 @@ namespace FVulkanEngine
 		static void defaultPipelineConfigInfo(PipelineConfigInfo& configInfo);
 	private:
 		void createPipeline(const PipelineConfigInfo& configInfo, const std::string& vertFilepath, const std::string& fragFilepath);
+		void createRenderPass();
 	private:
 		Device& pDevice;
+		SwapChain& pSwapChain;
+		VkRenderPass renderPass;
 		VkPipelineLayout pipelineLayout;
 	};
 }
