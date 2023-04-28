@@ -39,10 +39,12 @@ namespace FVulkanEngine
 		setupDebugMessenger();
 		device = std::make_unique<Device>(instance, enableValidationLayers, validationLayers, window->getSurface());
 		swapChain = std::make_unique<SwapChain>(*device, *window);
-		pipeline = std::make_unique<Pipeline>(*device, "shaders/simple_vertex_shader.vert.spv", "shaders/simple_fragment_shader.frag.spv");
+		Pipeline::PipelineConfigInfo pipelineConfigInfo{};
+		pipeline = std::make_unique<Pipeline>(*device, pipelineConfigInfo, "shaders/simple_vertex_shader.vert.spv", "shaders/simple_fragment_shader.frag.spv");
 	}
 	Graphics::~Graphics()
 	{
+		pipeline.reset();
 		swapChain.reset();
 		device.reset();
 		if (enableValidationLayers)
