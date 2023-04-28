@@ -9,9 +9,12 @@ namespace FVulkanEngine
 	{
 		createPhysicalDevice(instance);
 		createLogicalDevice(enableValidationLayers, validationLayers);
+		createCommandPool();
+		createCommandBuffer();
 	}
 	Device::~Device()
 	{
+		vkDestroyCommandPool(device, commandPool, nullptr);
 		vkDestroyDevice(device, nullptr);
 	}
 	void Device::createPhysicalDevice(const VkInstance& instance)
@@ -177,5 +180,34 @@ namespace FVulkanEngine
 	const VkDevice& Device::getDevice() const
 	{
 		return device;
+	}
+	void Device::createCommandPool()
+	{
+		QueueFamilyIndices queueFamilyIndices = findPhysicalQueueFamilies();
+
+		VkCommandPoolCreateInfo poolInfo{};
+		poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+		poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+		poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+		if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to create command pool");
+		}
+	}
+	void Device::createCommandBuffer()
+	{
+		VkCommandBufferAllocateInfo allocInfo{};
+		allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		allocInfo.commandPool = commandPool;
+		allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+		allocInfo.commandBufferCount = 1;
+		if (vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to allocate command buffers");
+		}
+	}
+	VkCommandBuffer& Device::getCommandBuffer()
+	{
+		return commandBuffer;
 	}
 }

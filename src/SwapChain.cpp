@@ -163,4 +163,12 @@ namespace FVulkanEngine
 			}
 		}
 	}
+	const std::vector<VkFramebuffer>& SwapChain::getFramebuffers()
+	{
+		return swapchainFramebuffers;
+	}
+	const VkExtent2D& SwapChain::getSwapChainExtent()
+	{
+		return swapChainExtent;
+	}
 }

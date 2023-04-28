@@ -28,11 +28,15 @@ namespace FVulkanEngine
 		~Device();
 		Device(const Device&) = delete;
 		Device& operator=(const Device&) = delete;
+	public:
 		void createPhysicalDevice(const VkInstance& instance);
 		void createLogicalDevice(bool enableValidationLayers, const std::vector<const char*>& validationLayers);
 		SwapChainSupportDetails getDeviceSwapChainSupportDetails() const;
 		QueueFamilyIndices findPhysicalQueueFamilies() const;
 		const VkDevice& getDevice() const;
+		void createCommandPool();
+		void createCommandBuffer();
+		VkCommandBuffer& getCommandBuffer();
 	private:
 		void pickPhysicalDevice(const VkInstance& instance);
 		bool isDeviceSuitable(VkPhysicalDevice device);
@@ -48,5 +52,7 @@ namespace FVulkanEngine
 		SwapChainSupportDetails deviceSwapChainDetails;
 		const VkSurfaceKHR& pSurface;
 		const std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+		VkCommandPool commandPool;
+		VkCommandBuffer commandBuffer;
 	};
 }
