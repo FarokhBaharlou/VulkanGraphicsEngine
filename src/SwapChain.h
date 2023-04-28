@@ -15,6 +15,7 @@ namespace FVulkanEngine
 		SwapChain& operator=(const SwapChain&) = default;
 	public:
 		const VkFormat& getSwapChainImageFormat() const;
+		void createFramebuffers(const VkRenderPass& renderPass);
 	private:
 		void createSwapChain();
 		void createImageViews();
@@ -29,5 +30,6 @@ namespace FVulkanEngine
 		VkFormat swapChainImageFormat;
 		VkExtent2D swapChainExtent;
 		std::vector<VkImageView> swapChainImageViews;
+		std::vector<VkFramebuffer> swapchainFramebuffers;
 	};
 }
