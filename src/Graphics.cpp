@@ -42,9 +42,14 @@ namespace FVulkanEngine
 		Pipeline::PipelineConfigInfo pipelineConfigInfo{};
 		Pipeline::defaultPipelineConfigInfo(pipelineConfigInfo);
 		pipeline = std::make_unique<Pipeline>(*device, *swapChain, pipelineConfigInfo, "shaders/simple_vertex_shader.vert.spv", "shaders/simple_fragment_shader.frag.spv");
+		swapChain->createFramebuffers(pipeline->getRenderPass());
+		createSyncObjects();
 	}
 	Graphics::~Graphics()
 	{
+		vkDestroySemaphore(device->getDevice(), renderFinishedSemaphore, nullptr);
+		vkDestroySemaphore(device->getDevice(), imageAvailableSemaphore, nullptr);
+		vkDestroyFence(device->getDevice(), inFlightFence, nullptr);
 		pipeline.reset();
 		swapChain.reset();
 		device.reset();
@@ -183,5 +188,62 @@ namespace FVulkanEngine
 	const std::unique_ptr<Window>& Graphics::getWindow()
 	{
 		return window;
+	}
+	void Graphics::createSyncObjects()
+	{
+		VkSemaphoreCreateInfo semaphoreInfo{};
+		semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+		VkFenceCreateInfo fenceInfo{};
+		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+		if (vkCreateSemaphore(device->getDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphore) != VK_SUCCESS ||
+			vkCreateSemaphore(device->getDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphore) != VK_SUCCESS ||
+			vkCreateFence(device->getDevice(), &fenceInfo, nullptr, &inFlightFence) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to create sync objects");
+		}
+	}
+	void Graphics::drawFrame()
+	{
+		vkWaitForFences(device->getDevice(), 1, &inFlightFence, VK_TRUE, UINT64_MAX);
+		vkResetFences(device->getDevice(), 1, &inFlightFence);
+
+		uint32_t imageIndex;
+		vkAcquireNextImageKHR(device->getDevice(), swapChain->getSwapChain(), UINT64_MAX, imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+
+		vkResetCommandBuffer(device->getCommandBuffer(), 0);
+		pipeline->recordCommandBuffer(imageIndex);
+
+		VkSubmitInfo submitInfo{};
+		submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+		VkSemaphore waitSemaphores[] = { imageAvailableSemaphore };
+		VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+		submitInfo.waitSemaphoreCount = 1;
+		submitInfo.pWaitSemaphores = waitSemaphores;
+		submitInfo.pWaitDstStageMask = waitStages;
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &device->getCommandBuffer();
+		VkSemaphore signalSemaphores[] = { renderFinishedSemaphore };
+		submitInfo.signalSemaphoreCount = 1;
+		submitInfo.pSignalSemaphores = signalSemaphores;
+		if (vkQueueSubmit(device->getGraphicsQueue(), 1, &submitInfo, inFlightFence) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to submit draw command buffer");
+		}
+
+		VkPresentInfoKHR presentInfo{};
+		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		presentInfo.waitSemaphoreCount = 1;
+		presentInfo.pWaitSemaphores = signalSemaphores;
+		VkSwapchainKHR swapChains[] = { swapChain->getSwapChain() };
+		presentInfo.swapchainCount = 1;
+		presentInfo.pSwapchains = swapChains;
+		presentInfo.pImageIndices = &imageIndex;
+		presentInfo.pResults = nullptr;
+		vkQueuePresentKHR(device->getPresentQueue(), &presentInfo);
+	}
+	const VkDevice& Graphics::getDevice() const
+	{
+		return device->getDevice();
 	}
 }

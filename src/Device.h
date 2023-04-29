@@ -37,6 +37,8 @@ namespace FVulkanEngine
 		void createCommandPool();
 		void createCommandBuffer();
 		VkCommandBuffer& getCommandBuffer();
+		VkQueue& getGraphicsQueue();
+		VkQueue& getPresentQueue();
 	private:
 		void pickPhysicalDevice(const VkInstance& instance);
 		bool isDeviceSuitable(VkPhysicalDevice device);

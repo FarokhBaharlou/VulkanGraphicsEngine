@@ -18,6 +18,7 @@ namespace FVulkanEngine
 		void createFramebuffers(const VkRenderPass& renderPass);
 		const std::vector<VkFramebuffer>& getFramebuffers();
 		const VkExtent2D& getSwapChainExtent();
+		const VkSwapchainKHR& getSwapChain();
 	private:
 		void createSwapChain();
 		void createImageViews();

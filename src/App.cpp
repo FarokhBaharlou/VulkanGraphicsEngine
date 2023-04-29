@@ -9,6 +9,8 @@ namespace FVulkanEngine
 		while (!gfx.getWindow()->shouldClose())
 		{
 			glfwPollEvents();
+			gfx.drawFrame();
 		}
+		vkDeviceWaitIdle(gfx.getDevice());
 	}
 }

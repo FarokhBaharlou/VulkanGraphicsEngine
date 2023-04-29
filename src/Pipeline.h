@@ -38,6 +38,7 @@ namespace FVulkanEngine
 	public:
 		static void defaultPipelineConfigInfo(PipelineConfigInfo& configInfo);
 		void recordCommandBuffer(uint32_t imageIndex);
+		const VkRenderPass& getRenderPass();
 	private:
 		void createPipeline(const PipelineConfigInfo& configInfo, const std::string& vertFilepath, const std::string& fragFilepath);
 		void createRenderPass();

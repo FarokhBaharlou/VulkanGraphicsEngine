@@ -8,6 +8,7 @@ namespace FVulkanEngine
 	SwapChain::SwapChain(const Device& device, const Window& window) : pDevice{ device }, pWindow{ window }
 	{
 		createSwapChain();
+		createImageViews();
 	}
 	SwapChain::~SwapChain()
 	{
@@ -170,5 +171,9 @@ namespace FVulkanEngine
 	const VkExtent2D& SwapChain::getSwapChainExtent()
 	{
 		return swapChainExtent;
+	}
+	const VkSwapchainKHR& SwapChain::getSwapChain()
+	{
+		return swapChain;
 	}
 }

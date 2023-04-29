@@ -19,6 +19,8 @@ namespace FVulkanEngine
 		Graphics& operator=(const Graphics&) = delete;
 	public:
 		const std::unique_ptr<Window>& getWindow();
+		void drawFrame();
+		const VkDevice& getDevice() const;
 	private:
 		std::vector<const char*> getRequiredExtensions();
 		void hasGlfwRequiredExtensions();
@@ -27,6 +29,7 @@ namespace FVulkanEngine
 		static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
 		void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
 		void setupDebugMessenger();
+		void createSyncObjects();
 	private:
 	#ifdef NDEBUG
 		const bool enableValidationLayers = false;
@@ -40,5 +43,8 @@ namespace FVulkanEngine
 		std::unique_ptr<Window> window;
 		std::unique_ptr<SwapChain> swapChain;
 		std::unique_ptr<Pipeline> pipeline;
+		VkSemaphore imageAvailableSemaphore;
+		VkSemaphore renderFinishedSemaphore;
+		VkFence inFlightFence;
 	};
 }

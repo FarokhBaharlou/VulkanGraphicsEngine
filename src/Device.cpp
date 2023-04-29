@@ -210,4 +210,12 @@ namespace FVulkanEngine
 	{
 		return commandBuffer;
 	}
+	VkQueue& Device::getGraphicsQueue()
+	{
+		return graphicsQueue;
+	}
+	VkQueue& Device::getPresentQueue()
+	{
+		return presentQueue;
+	}
 }
