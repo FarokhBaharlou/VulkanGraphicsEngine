@@ -20,6 +20,9 @@ namespace FVulkanEngine
 		const VkSurfaceKHR& getSurface();
 		GLFWwindow* getGLFWwindowPointer() const;
 		const VkSurfaceKHR& getWindowSurface() const;
+		static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
+	public:
+		bool framebufferResized = false;
 	private:
 		uint32_t width = 800;
 		uint32_t height = 600;

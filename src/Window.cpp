@@ -8,9 +8,11 @@ namespace FVulkanEngine
 		glfwInit();
 
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+		//glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
 		window = glfwCreateWindow(width, height, name.c_str(), nullptr, nullptr);
+		glfwSetWindowUserPointer(window, this);
+		glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 	}
 	Window::~Window()
 	{
@@ -43,5 +45,12 @@ namespace FVulkanEngine
 	const VkSurfaceKHR& Window::getWindowSurface() const
 	{
 		return surface;
+	}
+	void Window::framebufferResizeCallback(GLFWwindow* window, int width, int height)
+	{
+		auto wnd = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
+		wnd->framebufferResized = true;
+		wnd->width = width;
+		wnd->height = height;
 	}
 }

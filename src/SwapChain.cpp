@@ -12,15 +12,7 @@ namespace FVulkanEngine
 	}
 	SwapChain::~SwapChain()
 	{
-		for (auto framebuffer : swapchainFramebuffers)
-		{
-			vkDestroyFramebuffer(pDevice.getDevice(), framebuffer, nullptr);
-		}
-		for (auto imageView : swapChainImageViews)
-		{
-			vkDestroyImageView(pDevice.getDevice(), imageView, nullptr);
-		}
-		vkDestroySwapchainKHR(pDevice.getDevice(), swapChain, nullptr);
+		cleanupSwapChain();
 	}
 	void SwapChain::createSwapChain()
 	{
@@ -175,5 +167,32 @@ namespace FVulkanEngine
 	const VkSwapchainKHR& SwapChain::getSwapChain()
 	{
 		return swapChain;
+	}
+	void SwapChain::recreateSwapChain(const VkRenderPass& renderPass)
+	{
+		int width = 0, height = 0;
+		glfwGetFramebufferSize(pWindow.getGLFWwindowPointer(), &width, &height);
+		while (width == 0 || height == 0)
+		{
+			glfwGetFramebufferSize(pWindow.getGLFWwindowPointer(), &width, &height);
+			glfwWaitEvents();
+		}
+		vkDeviceWaitIdle(pDevice.getDevice());
+		cleanupSwapChain();
+		createSwapChain();
+		createImageViews();
+		createFramebuffers(renderPass);
+	}
+	void SwapChain::cleanupSwapChain()
+	{
+		for (auto& framebuffer : swapchainFramebuffers)
+		{
+			vkDestroyFramebuffer(pDevice.getDevice(), framebuffer, nullptr);
+		}
+		for (auto& imageView : swapChainImageViews)
+		{
+			vkDestroyImageView(pDevice.getDevice(), imageView, nullptr);
+		}
+		vkDestroySwapchainKHR(pDevice.getDevice(), swapChain, nullptr);
 	}
 }

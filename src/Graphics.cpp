@@ -216,11 +216,20 @@ namespace FVulkanEngine
 	void Graphics::drawFrame()
 	{
 		vkWaitForFences(device->getDevice(), 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
-		vkResetFences(device->getDevice(), 1, &inFlightFences[currentFrame]);
 
 		uint32_t imageIndex;
-		vkAcquireNextImageKHR(device->getDevice(), swapChain->getSwapChain(), UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+		VkResult result = vkAcquireNextImageKHR(device->getDevice(), swapChain->getSwapChain(), UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+		if (result == VK_ERROR_OUT_OF_DATE_KHR)
+		{
+			swapChain->recreateSwapChain(pipeline->getRenderPass());
+			return;
+		}
+		else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
+		{
+			throw std::runtime_error("failed to acquire swap chain image");
+		}
 
+		vkResetFences(device->getDevice(), 1, &inFlightFences[currentFrame]);
 		vkResetCommandBuffer(device->getCommandBuffer()[currentFrame], 0);
 		pipeline->recordCommandBuffer(imageIndex, currentFrame);
 
@@ -250,7 +259,16 @@ namespace FVulkanEngine
 		presentInfo.pSwapchains = swapChains;
 		presentInfo.pImageIndices = &imageIndex;
 		presentInfo.pResults = nullptr;
-		vkQueuePresentKHR(device->getPresentQueue(), &presentInfo);
+		result = vkQueuePresentKHR(device->getPresentQueue(), &presentInfo);
+		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || window->framebufferResized)
+		{
+			window->framebufferResized = false;
+			swapChain->recreateSwapChain(pipeline->getRenderPass());
+		}
+		else if (result != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to present swap chain image");
+		}
 
 		currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 	}
