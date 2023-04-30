@@ -30,6 +30,8 @@ namespace FVulkanEngine
 		void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
 		void setupDebugMessenger();
 		void createSyncObjects();
+	public:
+		static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 	private:
 	#ifdef NDEBUG
 		const bool enableValidationLayers = false;
@@ -43,8 +45,9 @@ namespace FVulkanEngine
 		std::unique_ptr<Window> window;
 		std::unique_ptr<SwapChain> swapChain;
 		std::unique_ptr<Pipeline> pipeline;
-		VkSemaphore imageAvailableSemaphore;
-		VkSemaphore renderFinishedSemaphore;
-		VkFence inFlightFence;
+		std::vector<VkSemaphore> imageAvailableSemaphores;
+		std::vector<VkSemaphore> renderFinishedSemaphores;
+		std::vector<VkFence> inFlightFences;
+		uint32_t currentFrame = 0;
 	};
 }

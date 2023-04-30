@@ -179,13 +179,13 @@ namespace FVulkanEngine
 			throw std::runtime_error("failed to create render pass");
 		}
 	}
-	void Pipeline::recordCommandBuffer(uint32_t imageIndex)
+	void Pipeline::recordCommandBuffer(uint32_t imageIndex, uint32_t currentFrame)
 	{
 		VkCommandBufferBeginInfo beginInfo{};
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		beginInfo.flags = 0;
 		beginInfo.pInheritanceInfo = nullptr;
-		if (vkBeginCommandBuffer(pDevice.getCommandBuffer(), &beginInfo) != VK_SUCCESS)
+		if (vkBeginCommandBuffer(pDevice.getCommandBuffer()[currentFrame], &beginInfo) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to begin recording command buffer");
 		}
@@ -199,8 +199,8 @@ namespace FVulkanEngine
 		VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };
 		renderPassInfo.clearValueCount = 1;
 		renderPassInfo.pClearValues = &clearColor;
-		vkCmdBeginRenderPass(pDevice.getCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-		vkCmdBindPipeline(pDevice.getCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+		vkCmdBeginRenderPass(pDevice.getCommandBuffer()[currentFrame], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+		vkCmdBindPipeline(pDevice.getCommandBuffer()[currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
 		VkViewport viewport{};
 		viewport.x = 0.0f;
@@ -209,17 +209,17 @@ namespace FVulkanEngine
 		viewport.height = static_cast<float>(pSwapChain.getSwapChainExtent().height);
 		viewport.minDepth = 0.0f;
 		viewport.maxDepth = 1.0f;
-		vkCmdSetViewport(pDevice.getCommandBuffer(), 0, 1, &viewport);
+		vkCmdSetViewport(pDevice.getCommandBuffer()[currentFrame], 0, 1, &viewport);
 
 		VkRect2D scissor{};
 		scissor.offset = { 0, 0 };
 		scissor.extent = pSwapChain.getSwapChainExtent();
-		vkCmdSetScissor(pDevice.getCommandBuffer(), 0, 1, &scissor);
+		vkCmdSetScissor(pDevice.getCommandBuffer()[currentFrame], 0, 1, &scissor);
 
-		vkCmdDraw(pDevice.getCommandBuffer(), 3, 1, 0, 0);
+		vkCmdDraw(pDevice.getCommandBuffer()[currentFrame], 3, 1, 0, 0);
 
-		vkCmdEndRenderPass(pDevice.getCommandBuffer());
-		if (vkEndCommandBuffer(pDevice.getCommandBuffer()) != VK_SUCCESS)
+		vkCmdEndRenderPass(pDevice.getCommandBuffer()[currentFrame]);
+		if (vkEndCommandBuffer(pDevice.getCommandBuffer()[currentFrame]) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to record command buffer");
 		}

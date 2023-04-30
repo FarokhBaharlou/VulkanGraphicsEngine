@@ -35,8 +35,8 @@ namespace FVulkanEngine
 		QueueFamilyIndices findPhysicalQueueFamilies() const;
 		const VkDevice& getDevice() const;
 		void createCommandPool();
-		void createCommandBuffer();
-		VkCommandBuffer& getCommandBuffer();
+		void createCommandBuffers();
+		std::vector<VkCommandBuffer>& getCommandBuffer();
 		VkQueue& getGraphicsQueue();
 		VkQueue& getPresentQueue();
 	private:
@@ -55,6 +55,6 @@ namespace FVulkanEngine
 		const VkSurfaceKHR& pSurface;
 		const std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 		VkCommandPool commandPool;
-		VkCommandBuffer commandBuffer;
+		std::vector<VkCommandBuffer> commandBuffers;
 	};
 }

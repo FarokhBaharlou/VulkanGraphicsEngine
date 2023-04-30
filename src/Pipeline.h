@@ -37,7 +37,7 @@ namespace FVulkanEngine
 		Pipeline& operator=(const Pipeline&) = delete;
 	public:
 		static void defaultPipelineConfigInfo(PipelineConfigInfo& configInfo);
-		void recordCommandBuffer(uint32_t imageIndex);
+		void recordCommandBuffer(uint32_t imageIndex, uint32_t currentFrame);
 		const VkRenderPass& getRenderPass();
 	private:
 		void createPipeline(const PipelineConfigInfo& configInfo, const std::string& vertFilepath, const std::string& fragFilepath);
