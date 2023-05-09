@@ -1,8 +1,10 @@
 #pragma once
 
+#include "Device.h"
 #include <vulkan/vulkan.h>
 #include <glm/glm.hpp>
 #include <vector>
+#include <stdexcept>
 
 namespace FVulkanEngine
 {
@@ -83,6 +85,37 @@ namespace FVulkanEngine
 				return 0u;
 			}
 			ElementType getType() const { return type; }
+			VkVertexInputAttributeDescription getAttributeDescription(size_t i) const
+			{
+				switch (type)
+				{
+				case FVulkanEngine::VertexLayout::Position2D:
+					return generateAttributeDescription<Position2D>(i, offset);
+				case FVulkanEngine::VertexLayout::Position3D:
+					return generateAttributeDescription<Position3D>(i, offset);
+				case FVulkanEngine::VertexLayout::Texture2D:
+					return generateAttributeDescription<Texture2D>(i, offset);
+				case FVulkanEngine::VertexLayout::Normal:
+					return generateAttributeDescription<Normal>(i, offset);
+				case FVulkanEngine::VertexLayout::Float3Color:
+					return generateAttributeDescription<Float3Color>(i, offset);
+				case FVulkanEngine::VertexLayout::Float4Color:
+					return generateAttributeDescription<Float4Color>(i, offset);
+				}
+				assert("Invalid element type" && false);
+				return VkVertexInputAttributeDescription{};
+			}
+		private:
+			template<ElementType Type>
+			static constexpr VkVertexInputAttributeDescription generateAttributeDescription(size_t idx, size_t offset)
+			{
+				VkVertexInputAttributeDescription desc{};
+				desc.binding = 0;
+				desc.location = static_cast<uint32_t>(idx);
+				desc.format = Map<Type>::format;
+				desc.offset = static_cast<uint32_t>(offset);
+				return desc;
+			}
 		private:
 			ElementType type;
 			size_t offset;
@@ -109,6 +142,15 @@ namespace FVulkanEngine
 		}
 		size_t getSize() const { return elements.empty() ? 0u : elements.back().getOffsetAfter(); }
 		size_t getElementCount() const { return elements.size(); }
+		std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions() const
+		{
+			std::vector<VkVertexInputAttributeDescription> attributeDescriptions{ getElementCount() };
+			for (size_t i = 0; i < attributeDescriptions.size(); i++)
+			{
+				attributeDescriptions[i] = elements[i].getAttributeDescription(i);
+			}
+			return attributeDescriptions;
+		}
 	private:
 		std::vector<Element> elements;
 	};
@@ -156,8 +198,8 @@ namespace FVulkanEngine
 		template<typename First, typename... Rest>
 		void setAttributeByIndex(size_t i, First&& first, Rest&&... rest)
 		{
-			setAttributeByIndex(i, std::forward(first));
-			setAttributeByIndex(i + 1, std::forward(rest)...);
+			setAttributeByIndex(i, std::forward<First>(first));
+			setAttributeByIndex(i + 1, std::forward<Rest>(rest)...);
 		}
 		template<VertexLayout::ElementType DestLayoutType, typename SrcType>
 		void setAttribute(char* pAttribute, SrcType&& val)
@@ -191,7 +233,12 @@ namespace FVulkanEngine
 	class VertexBuffer
 	{
 	public:
-		VertexBuffer(VertexLayout layout) : layout(std::move(layout)) {}
+		VertexBuffer(VertexLayout layout, const Device& device) : layout(std::move(layout)), device{ device } {}
+		~VertexBuffer() 
+		{
+			vkDestroyBuffer(device.getDevice(), vertexBuffer, nullptr);
+			vkFreeMemory(device.getDevice(), vertexBufferMemory, nullptr);
+		}
 		const char* getData() const { return buffer.data(); }
 		const VertexLayout& getLayout() const { return layout; }
 		size_t getSize() const { return buffer.size() / layout.getSize(); }
@@ -201,7 +248,7 @@ namespace FVulkanEngine
 		{
 			assert(sizeof...(params) == layout.getElementCount() && "param count does not match number of vertex elements");
 			buffer.resize(buffer.size() + layout.getSize());
-			back().SetAttributeByIndex(0u, std::forward<Params>(params)...);
+			back().setAttributeByIndex(0u, std::forward<Params>(params)...);
 		}
 		Vertex back()
 		{
@@ -230,8 +277,67 @@ namespace FVulkanEngine
 		{
 			return const_cast<VertexBuffer&>(*this)[i];
 		}
+		VkVertexInputBindingDescription getBindingDescription() const
+		{
+			VkVertexInputBindingDescription bindingDescription{};
+			bindingDescription.binding = 0;
+			bindingDescription.stride = static_cast<uint32_t>(layout.getSize());
+			bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+			return bindingDescription;
+		}
+		std::vector<VkVertexInputAttributeDescription> getAttributeDescriptions() const
+		{
+			return layout.getAttributeDescriptions();
+		}
+		void createVertexBuffer()
+		{
+			VkBufferCreateInfo bufferInfo{};
+			bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+			bufferInfo.size = buffer.size();
+			bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+			bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+			if (vkCreateBuffer(device.getDevice(), &bufferInfo, nullptr, &vertexBuffer) != VK_SUCCESS)
+			{
+				throw std::runtime_error("failed to create vertex buffer");
+			}
+			VkMemoryRequirements memRequirements;
+			vkGetBufferMemoryRequirements(device.getDevice(), vertexBuffer, &memRequirements);
+			VkMemoryAllocateInfo allocInfo{};
+			allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+			allocInfo.allocationSize = memRequirements.size;
+			allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+			if (vkAllocateMemory(device.getDevice(), &allocInfo, nullptr, &vertexBufferMemory) != VK_SUCCESS)
+			{
+				throw std::runtime_error("failed to allocate vertex buffer memory");
+			}
+			vkBindBufferMemory(device.getDevice(), vertexBuffer, vertexBufferMemory, 0);
+
+			void* data;
+			vkMapMemory(device.getDevice(), vertexBufferMemory, 0, bufferInfo.size, 0, &data);
+			memcpy(data, buffer.data(), static_cast<size_t>(bufferInfo.size));
+			vkUnmapMemory(device.getDevice(), vertexBufferMemory);
+		}
+		VkBuffer getBuffer() { return vertexBuffer; }
 	private:
+		uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
+		{
+			VkPhysicalDeviceMemoryProperties memProperties;
+			vkGetPhysicalDeviceMemoryProperties(device.getPhysicalDevcie(), &memProperties);
+			for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
+			{
+				if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
+				{
+					return i;
+				}
+			}
+			throw std::runtime_error("failed to find suitable memory type");
+			return 0;
+		}
+	private:
+		const Device& device;
 		std::vector<char> buffer;
 		VertexLayout layout;
+		VkBuffer vertexBuffer;
+		VkDeviceMemory vertexBufferMemory;
 	};
 }

@@ -34,6 +34,7 @@ namespace FVulkanEngine
 		SwapChainSupportDetails getDeviceSwapChainSupportDetails() const;
 		QueueFamilyIndices findPhysicalQueueFamilies() const;
 		const VkDevice& getDevice() const;
+		const VkPhysicalDevice& getPhysicalDevcie() const;
 		void createCommandPool();
 		void createCommandBuffers();
 		std::vector<VkCommandBuffer>& getCommandBuffer();

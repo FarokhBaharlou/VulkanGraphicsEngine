@@ -5,6 +5,7 @@
 #include "Window.h"
 #include "SwapChain.h"
 #include "Pipeline.h"
+#include "Vertex.h"
 #include <vector>
 #include <memory>
 
@@ -49,5 +50,6 @@ namespace FVulkanEngine
 		std::vector<VkSemaphore> renderFinishedSemaphores;
 		std::vector<VkFence> inFlightFences;
 		uint32_t currentFrame = 0;
+		std::unique_ptr<VertexBuffer> vertexBuffer;
 	};
 }

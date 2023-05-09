@@ -4,7 +4,7 @@
 
 namespace FVulkanEngine
 {
-	Pipeline::Pipeline(Device& device, SwapChain& swapChain, const PipelineConfigInfo& configInfo, const std::string& vertFilepath, const std::string& fragFilepath) : pDevice{ device }, pSwapChain{ swapChain }
+	Pipeline::Pipeline(Device& device, SwapChain& swapChain, const PipelineConfigInfo& configInfo, const std::string& vertFilepath, const std::string& fragFilepath, VertexBuffer& vertexBuffer) : pDevice{ device }, pSwapChain{ swapChain }, vb{ vertexBuffer }
 	{
 		createRenderPass();
 		createPipeline(configInfo, vertFilepath, fragFilepath);
@@ -37,6 +37,15 @@ namespace FVulkanEngine
 		shaderStages[1].pNext = nullptr;
 		shaderStages[1].pSpecializationInfo = nullptr;
 
+		auto bindingDescription = vb.getBindingDescription();
+		auto attributeDescriptions = vb.getAttributeDescriptions();
+		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
+		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+		vertexInputInfo.vertexBindingDescriptionCount = 1;
+		vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+		vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+		vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutInfo.setLayoutCount = 0;
@@ -53,7 +62,7 @@ namespace FVulkanEngine
 		pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 		pipelineInfo.stageCount = 2;
 		pipelineInfo.pStages = shaderStages;
-		pipelineInfo.pVertexInputState = &configInfo.vertexInputInfo;
+		pipelineInfo.pVertexInputState = &vertexInputInfo;
 		pipelineInfo.pInputAssemblyState = &configInfo.inputAssemblyInfo;
 		pipelineInfo.pViewportState = &configInfo.viewportInfo;
 		pipelineInfo.pRasterizationState = &configInfo.rasterizationInfo;
@@ -216,7 +225,11 @@ namespace FVulkanEngine
 		scissor.extent = pSwapChain.getSwapChainExtent();
 		vkCmdSetScissor(pDevice.getCommandBuffer()[currentFrame], 0, 1, &scissor);
 
-		vkCmdDraw(pDevice.getCommandBuffer()[currentFrame], 3, 1, 0, 0);
+		VkBuffer vertexBuffers[] = { vb.getBuffer() };
+		VkDeviceSize offsets[] = { 0 };
+		vkCmdBindVertexBuffers(pDevice.getCommandBuffer()[currentFrame], 0, 1, vertexBuffers, offsets);
+
+		vkCmdDraw(pDevice.getCommandBuffer()[currentFrame], static_cast<uint32_t>(vb.getSize()), 1, 0, 0);
 
 		vkCmdEndRenderPass(pDevice.getCommandBuffer()[currentFrame]);
 		if (vkEndCommandBuffer(pDevice.getCommandBuffer()[currentFrame]) != VK_SUCCESS)

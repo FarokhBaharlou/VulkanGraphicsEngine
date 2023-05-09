@@ -39,9 +39,14 @@ namespace FVulkanEngine
 		setupDebugMessenger();
 		device = std::make_unique<Device>(instance, enableValidationLayers, validationLayers, window->getSurface());
 		swapChain = std::make_unique<SwapChain>(*device, *window);
+		vertexBuffer = std::make_unique<VertexBuffer>(VertexLayout{}.append(VertexLayout::Position2D).append(VertexLayout::Float3Color), *device);
+		vertexBuffer->emplaceBack(glm::vec2{ 0.0f, -0.5f }, glm::vec3{ 1.0f, 1.0f, 1.0f });
+		vertexBuffer->emplaceBack(glm::vec2{ 0.5f, 0.5f }, glm::vec3{ 0.0f, 1.0f, 0.0f });
+		vertexBuffer->emplaceBack(glm::vec2{ -0.5f, 0.5f }, glm::vec3{ 0.0f, 0.0f, 1.0f });
+		vertexBuffer->createVertexBuffer();
 		Pipeline::PipelineConfigInfo pipelineConfigInfo{};
 		Pipeline::defaultPipelineConfigInfo(pipelineConfigInfo);
-		pipeline = std::make_unique<Pipeline>(*device, *swapChain, pipelineConfigInfo, "shaders/simple_vertex_shader.vert.spv", "shaders/simple_fragment_shader.frag.spv");
+		pipeline = std::make_unique<Pipeline>(*device, *swapChain, pipelineConfigInfo, "shaders/simple_vertex_shader.vert.spv", "shaders/simple_fragment_shader.frag.spv", *vertexBuffer);
 		swapChain->createFramebuffers(pipeline->getRenderPass());
 		createSyncObjects();
 	}
@@ -54,6 +59,7 @@ namespace FVulkanEngine
 			vkDestroyFence(device->getDevice(), inFlightFences[i], nullptr);
 		}
 		pipeline.reset();
+		vertexBuffer.reset();
 		swapChain.reset();
 		device.reset();
 		if (enableValidationLayers)

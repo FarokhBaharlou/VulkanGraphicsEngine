@@ -182,6 +182,10 @@ namespace FVulkanEngine
 	{
 		return device;
 	}
+	const VkPhysicalDevice& Device::getPhysicalDevcie() const
+	{
+		return physicalDevice;
+	}
 	void Device::createCommandPool()
 	{
 		QueueFamilyIndices queueFamilyIndices = findPhysicalQueueFamilies();
