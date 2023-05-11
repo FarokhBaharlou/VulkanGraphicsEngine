@@ -2,7 +2,7 @@
 
 #include "Device.h"
 #include "SwapChain.h"
-#include "Vertex.h"
+#include "Buffer.h"
 #include <string>
 
 namespace FVulkanEngine
@@ -32,7 +32,7 @@ namespace FVulkanEngine
 			VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 		};
 	public:
-		Pipeline(Device& device, SwapChain& swapChain,const PipelineConfigInfo& configInfo, const std::string& vertFilepath, const std::string& fragFilepath, VertexBuffer& vertexBuffer);
+		Pipeline(Device& device, SwapChain& swapChain,const PipelineConfigInfo& configInfo, const std::string& vertFilepath, const std::string& fragFilepath, Buffer& vertexBuffer);
 		~Pipeline();
 		Pipeline(const Pipeline&) = delete;
 		Pipeline& operator=(const Pipeline&) = delete;
@@ -46,7 +46,7 @@ namespace FVulkanEngine
 	private:
 		Device& pDevice;
 		SwapChain& pSwapChain;
-		VertexBuffer& vb;
+		Buffer& vb;
 		VkRenderPass renderPass;
 		VkPipelineLayout pipelineLayout;
 		VkPipeline graphicsPipeline;

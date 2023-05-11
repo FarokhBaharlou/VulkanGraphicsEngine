@@ -4,7 +4,7 @@
 
 namespace FVulkanEngine
 {
-	Pipeline::Pipeline(Device& device, SwapChain& swapChain, const PipelineConfigInfo& configInfo, const std::string& vertFilepath, const std::string& fragFilepath, VertexBuffer& vertexBuffer) : pDevice{ device }, pSwapChain{ swapChain }, vb{ vertexBuffer }
+	Pipeline::Pipeline(Device& device, SwapChain& swapChain, const PipelineConfigInfo& configInfo, const std::string& vertFilepath, const std::string& fragFilepath, Buffer& vertexBuffer) : pDevice{ device }, pSwapChain{ swapChain }, vb{ vertexBuffer }
 	{
 		createRenderPass();
 		createPipeline(configInfo, vertFilepath, fragFilepath);
@@ -37,8 +37,8 @@ namespace FVulkanEngine
 		shaderStages[1].pNext = nullptr;
 		shaderStages[1].pSpecializationInfo = nullptr;
 
-		auto bindingDescription = vb.getBindingDescription();
-		auto attributeDescriptions = vb.getAttributeDescriptions();
+		auto bindingDescription = vb.getBuffer().getBindingDescription();
+		auto attributeDescriptions = vb.getBuffer().getAttributeDescriptions();
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 		vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 		vertexInputInfo.vertexBindingDescriptionCount = 1;
@@ -225,11 +225,11 @@ namespace FVulkanEngine
 		scissor.extent = pSwapChain.getSwapChainExtent();
 		vkCmdSetScissor(pDevice.getCommandBuffer()[currentFrame], 0, 1, &scissor);
 
-		VkBuffer vertexBuffers[] = { vb.getBuffer() };
+		VkBuffer vertexBuffers[] = { vb.getVkBuffer() };
 		VkDeviceSize offsets[] = { 0 };
 		vkCmdBindVertexBuffers(pDevice.getCommandBuffer()[currentFrame], 0, 1, vertexBuffers, offsets);
 
-		vkCmdDraw(pDevice.getCommandBuffer()[currentFrame], static_cast<uint32_t>(vb.getSize()), 1, 0, 0);
+		vkCmdDraw(pDevice.getCommandBuffer()[currentFrame], static_cast<uint32_t>(vb.getBuffer().getSize()), 1, 0, 0);
 
 		vkCmdEndRenderPass(pDevice.getCommandBuffer()[currentFrame]);
 		if (vkEndCommandBuffer(pDevice.getCommandBuffer()[currentFrame]) != VK_SUCCESS)

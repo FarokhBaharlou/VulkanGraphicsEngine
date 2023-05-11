@@ -1,4 +1,5 @@
 #include "Graphics.h"
+#include "Buffer.h"
 #include <iostream>
 #include <stdexcept>
 #include <unordered_set>
@@ -39,14 +40,14 @@ namespace FVulkanEngine
 		setupDebugMessenger();
 		device = std::make_unique<Device>(instance, enableValidationLayers, validationLayers, window->getSurface());
 		swapChain = std::make_unique<SwapChain>(*device, *window);
-		vertexBuffer = std::make_unique<VertexBuffer>(VertexLayout{}.append(VertexLayout::Position2D).append(VertexLayout::Float3Color), *device);
+		std::unique_ptr<VertexBuffer> vertexBuffer = std::make_unique<VertexBuffer>(VertexLayout{}.append(VertexLayout::Position2D).append(VertexLayout::Float3Color));
 		vertexBuffer->emplaceBack(glm::vec2{ 0.0f, -0.5f }, glm::vec3{ 1.0f, 1.0f, 1.0f });
 		vertexBuffer->emplaceBack(glm::vec2{ 0.5f, 0.5f }, glm::vec3{ 0.0f, 1.0f, 0.0f });
 		vertexBuffer->emplaceBack(glm::vec2{ -0.5f, 0.5f }, glm::vec3{ 0.0f, 0.0f, 1.0f });
-		vertexBuffer->createVertexBuffer();
+		buffer = std::make_unique<Buffer>(*device, *vertexBuffer);
 		Pipeline::PipelineConfigInfo pipelineConfigInfo{};
 		Pipeline::defaultPipelineConfigInfo(pipelineConfigInfo);
-		pipeline = std::make_unique<Pipeline>(*device, *swapChain, pipelineConfigInfo, "shaders/simple_vertex_shader.vert.spv", "shaders/simple_fragment_shader.frag.spv", *vertexBuffer);
+		pipeline = std::make_unique<Pipeline>(*device, *swapChain, pipelineConfigInfo, "shaders/simple_vertex_shader.vert.spv", "shaders/simple_fragment_shader.frag.spv", *buffer);
 		swapChain->createFramebuffers(pipeline->getRenderPass());
 		createSyncObjects();
 	}
@@ -59,8 +60,8 @@ namespace FVulkanEngine
 			vkDestroyFence(device->getDevice(), inFlightFences[i], nullptr);
 		}
 		pipeline.reset();
-		vertexBuffer.reset();
 		swapChain.reset();
+		buffer.reset();
 		device.reset();
 		if (enableValidationLayers)
 		{
